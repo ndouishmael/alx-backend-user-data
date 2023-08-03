@@ -7,7 +7,7 @@ import mysql.connector
 import os
 
 # Define the sensitive fields from user_data.csv
-PII_FIELDS = ("name", "email", "ssn", "password", "credit_card")
+PII_FIELDS = ("name", "email", "phone", "ssn", "password")
 
 class RedactingFormatter(logging.Formatter):
     REDACTION = "***"
@@ -64,10 +64,12 @@ def main() -> None:
     headers = [field[0] for field in cursor.description]
     logger = get_logger()
 
+    # Log the filtered rows
+    logger.info("Filtered rows:")
     for row in cursor:
         info_answer = ''
         for f, p in zip(row, headers):
-            info_answer += f'{p}={(f)}; '
+            info_answer += f'{p}={str(f)}; '
         logger.info(info_answer)
 
     cursor.close()
