@@ -17,13 +17,13 @@ class RedactingFormatter(logging.Formatter):
 
     def format(self, record: logging.LogRecord) -> str:
         log_message = super().format(record)
-        return self.filter_datum(self.fields, self.REDACTION, log_message, self.SEPARATOR)
+        return self._filter_datum(self.fields, self.REDACTION, log_message, self.SEPARATOR)
 
-def filter_datum(fields: List[str], redaction: str, message: str, separator: str) -> str:
-    """Returns regex obfuscated log messages"""
-    for field in fields:
-        message = re.sub(f'{field}=(.*?){separator}', f'{field}={redaction}{separator}', message)
-    return message
+    def _filter_datum(self, fields: List[str], redaction: str, message: str, separator: str) -> str:
+        """Returns regex obfuscated log messages"""
+        for field in fields:
+            message = re.sub(f'{field}=(.*?){separator}', f'{field}={redaction}{separator}', message)
+        return message
 
 def get_db() -> mysql.connector.connection.MySQLConnection:
     """Connection to MySQL environment"""
