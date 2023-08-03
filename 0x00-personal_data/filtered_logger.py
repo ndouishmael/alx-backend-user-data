@@ -1,11 +1,8 @@
 #!/usr/bin/env python3
 """ Use of regex in replacing occurrences of certain field values """
+import logging
 import re
 from typing import List
-import logging
-import mysql.connector
-import os
-
 
 class RedactingFormatter(logging.Formatter):
     """ Redacting Formatter class
@@ -20,13 +17,14 @@ class RedactingFormatter(logging.Formatter):
         self.fields = fields
 
     def format(self, record: logging.LogRecord) -> str:
-        """ Returns filtered values from log records """
-        return filter_datum(self.fields, self.REDACTION,
-                            super().format(record), self.SEPARATOR)
+        log_message = super().format(record)
+        return filter_datum(self.fields, self.REDACTION, log_message, self.SEPARATOR)
 
-
-PII_FIELDS = ("name", "email", "password", "ssn", "phone")
-
+def filter_datum(fields: List[str], redaction: str, message: str, separator: str) -> str:
+    """ Returns regex obfuscated log messages """
+    for field in fields:
+        message = re.sub(f'{field}=(.*?){separator}', f'{field}={redaction}{separator}', message)
+    return message
 
 def get_db() -> mysql.connector.connection.MySQLConnection:
     """ Connection to MySQL environment """
@@ -37,16 +35,6 @@ def get_db() -> mysql.connector.connection.MySQLConnection:
         database=os.getenv('PERSONAL_DATA_DB_NAME')
     )
     return db_connect
-
-
-def filter_datum(fields: List[str], redaction: str, message: str,
-                 separator: str) -> str:
-    """ Returns regex obfuscated log messages """
-    for field in fields:
-        message = re.sub(f'{field}=(.*?){separator}',
-                         f'{field}={redaction}{separator}', message)
-    return message
-
 
 def get_logger() -> logging.Logger:
     """ Returns a logging.Logger object """
@@ -62,7 +50,6 @@ def get_logger() -> logging.Logger:
 
     logger.addHandler(target_handler)
     return logger
-
 
 def main() -> None:
     """ Obtain database connection using get_db
@@ -84,7 +71,6 @@ def main() -> None:
 
     cursor.close()
     db.close()
-
 
 if __name__ == '__main__':
     main()
