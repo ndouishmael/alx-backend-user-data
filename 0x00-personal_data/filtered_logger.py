@@ -3,7 +3,7 @@
 import logging
 import re
 from typing import List
-import csv
+import mysql.connector
 import os
 
 # Define the sensitive fields from user_data.csv
@@ -28,10 +28,15 @@ class RedactingFormatter(logging.Formatter):
             message = re.sub(f'{field}=(.*?){separator}', f'{field}={redaction}{separator}', message)
         return message
 
-def get_db() -> None:
-    """Connection to MySQL environment"""
-    # This function is just a placeholder since the database connection is not used in this task.
-    pass
+def get_db() -> mysql.connector.connection.MySQLConnection:
+    """ Connection to MySQL environment """
+    db_connect = mysql.connector.connect(
+        user=os.getenv('PERSONAL_DATA_DB_USERNAME', 'root'),
+        password=os.getenv('PERSONAL_DATA_DB_PASSWORD', ''),
+        host=os.getenv('PERSONAL_DATA_DB_HOST', 'localhost'),
+        database=os.getenv('PERSONAL_DATA_DB_NAME')
+    )
+    return db_connect
 
 def get_logger() -> logging.Logger:
     """Returns a logging.Logger object"""
