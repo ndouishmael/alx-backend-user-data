@@ -2,7 +2,7 @@
 """
 Main file
 """
-'''
+
 import logging
 import re
 
