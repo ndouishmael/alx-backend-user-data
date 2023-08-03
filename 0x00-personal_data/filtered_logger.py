@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-""" Use of regex in replacing occurrences of certain field values """
+
 import logging
 import re
 from typing import List
@@ -7,9 +7,6 @@ import mysql.connector
 import os
 
 class RedactingFormatter(logging.Formatter):
-    """ Redacting Formatter class
-    """
-
     REDACTION = "***"
     FORMAT = "[HOLBERTON] %(name)s %(levelname)s %(asctime)-15s: %(message)s"
     SEPARATOR = ";"
@@ -20,16 +17,16 @@ class RedactingFormatter(logging.Formatter):
 
     def format(self, record: logging.LogRecord) -> str:
         log_message = super().format(record)
-        return filter_datum(self.fields, self.REDACTION, log_message, self.SEPARATOR)
+        return self.filter_datum(self.fields, self.REDACTION, log_message, self.SEPARATOR)
 
 def filter_datum(fields: List[str], redaction: str, message: str, separator: str) -> str:
-    """ Returns regex obfuscated log messages """
+    """Returns regex obfuscated log messages"""
     for field in fields:
         message = re.sub(f'{field}=(.*?){separator}', f'{field}={redaction}{separator}', message)
     return message
 
 def get_db() -> mysql.connector.connection.MySQLConnection:
-    """ Connection to MySQL environment """
+    """Connection to MySQL environment"""
     db_connect = mysql.connector.connect(
         user=os.getenv('PERSONAL_DATA_DB_USERNAME', 'root'),
         password=os.getenv('PERSONAL_DATA_DB_PASSWORD', ''),
@@ -39,7 +36,7 @@ def get_db() -> mysql.connector.connection.MySQLConnection:
     return db_connect
 
 def get_logger() -> logging.Logger:
-    """ Returns a logging.Logger object """
+    """Returns a logging.Logger object"""
     logger = logging.getLogger("user_data")
     logger.setLevel(logging.INFO)
     logger.propagate = False
@@ -54,10 +51,9 @@ def get_logger() -> logging.Logger:
     return logger
 
 def main() -> None:
-    """ Obtain database connection using get_db
+    """Obtain database connection using get_db,
     retrieve all role in the users table and display
-    each row under a filtered format
-    """
+    each row under a filtered format"""
     db = get_db()
     cursor = db.cursor()
     cursor.execute("SELECT * FROM users;")
