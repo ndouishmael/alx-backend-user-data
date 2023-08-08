@@ -26,8 +26,19 @@ def stats() -> str:
     return jsonify(stats)
 
 
-# New endpoint to raise a 401 error
-@app_views.route('/unauthorized')
-def unauthorized_endpoint():
-    # Raise a 401 error using abort
+@app_views.route('/unauthorized', methods=['GET'], strict_slashes=False)
+def unauthorized() -> str:
+    """ GET /api/v1/unauthorized
+    Return:
+      - raises a 401 error by using abort
+    """
     abort(401)
+
+
+@app_views.route('/forbidden', methods=['GET'], strict_slashes=False)
+def forbidden() -> str:
+    """ GET /api/v1/forbidden
+    Return:
+      - raises a 403 error by using abort
+    """
+    abort(403)
