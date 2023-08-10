@@ -8,7 +8,6 @@ from flask_cors import (CORS, cross_origin)
 import os
 from os import getenv
 
-
 app = Flask(__name__)
 app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True
 app.register_blueprint(app_views)
@@ -32,6 +31,10 @@ elif AUTH_TYPE == "session_db_auth":
     from api.v1.auth.session_db_auth import SessionDBAuth
     auth = SessionDBAuth()
 
+# New /status route definition
+@app.route('/api/v1/status/', methods=['GET'], strict_slashes=False)
+def get_status():
+    return jsonify({"status": "OK"})
 
 @ app.errorhandler(404)
 def not_found(error) -> str:
@@ -39,20 +42,17 @@ def not_found(error) -> str:
     """
     return jsonify({"error": "Not found"}), 404
 
-
 @ app.errorhandler(401)
 def unauthorized_error(error) -> str:
     """ Unauthorized handler
     """
     return jsonify({"error": "Unauthorized"}), 401
 
-
 @ app.errorhandler(403)
 def forbidden_error(error) -> str:
     """ Forbidden handler
     """
     return jsonify({"error": "Forbidden"}), 403
-
 
 @ app.before_request
 def before_request() -> str:
@@ -79,7 +79,6 @@ def before_request() -> str:
         abort(403)
 
     request.current_user = current_user
-
 
 if __name__ == "__main__":
     host = getenv("API_HOST", "0.0.0.0")
