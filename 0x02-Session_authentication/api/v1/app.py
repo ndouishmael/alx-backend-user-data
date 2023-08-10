@@ -2,18 +2,17 @@
 """
 Route module for the API
 """
+
 from api.v1.views import app_views
 from flask import Flask, jsonify, abort, request
-from flask_cors import (CORS, cross_origin)
-import os
-from os import getenv
+from flask_cors import CORS
 
 app = Flask(__name__)
 app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True
 app.register_blueprint(app_views)
 CORS(app, resources={r"/api/v1/*": {"origins": "*"}})
 auth = None
-AUTH_TYPE = getenv("AUTH_TYPE")
+AUTH_TYPE = os.getenv("AUTH_TYPE")
 
 if AUTH_TYPE == "auth":
     from api.v1.auth.auth import Auth
@@ -31,24 +30,30 @@ elif AUTH_TYPE == "session_db_auth":
     from api.v1.auth.session_db_auth import SessionDBAuth
     auth = SessionDBAuth()
 
+
 @app.errorhandler(404)
 def not_found(error):
-    """ Not found handler """
+    """Not found handler"""
     return jsonify({"error": "Not found"}), 404
+
 
 @app.errorhandler(401)
 def unauthorized_error(error):
-    """ Unauthorized handler """
+    """Unauthorized handler"""
     return jsonify({"error": "Unauthorized"}), 401
+
 
 @app.errorhandler(403)
 def forbidden_error(error):
-    """ Forbidden handler """
+    """Forbidden handler"""
     return jsonify({"error": "Forbidden"}), 403
+
 
 @app.before_request
 def before_request():
-    """ Before Request Handler - Requests Validation """
+    """
+    Before Request Handler - Requests Validation
+    """
     if auth is None:
         return
 
@@ -70,13 +75,16 @@ def before_request():
 
     request.current_user = current_user
 
-    # Check if the path is /users/me and set request.current_user accordingly
     if request.path == '/users/me':
+        """
+        Handle the endpoint /users/me
+        """
         if current_user is None:
             abort(404)
         request.current_user = current_user
 
+
 if __name__ == "__main__":
-    host = getenv("API_HOST", "0.0.0.0")
-    port = getenv("API_PORT", "5000")
+    host = os.getenv("API_HOST", "0.0.0.0")
+    port = os.getenv("API_PORT", "5000")
     app.run(host=host, port=port)
